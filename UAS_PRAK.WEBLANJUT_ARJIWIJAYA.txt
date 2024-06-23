@@ -1,0 +1,275 @@
+Column Name	Data Type	Description
+id	         int	        Unique identifier for each patient
+name	        varchar	        Patient's full name
+date_of_birth	date	        Patient's date of birth
+address	text	Patient's       address
+phone_number	varchar	        Patient's phone number
+diagnosis	text	        Patient's diagnosis
+created_at	timestamp	Timestamp when the patient data was created
+updated_at	timestamp	Timestamp when the patient data was last updated
+1. Buatlah sebuah sistem tentang data pasien rumah sakit dimana perawat dapat input data pasien rumah sakit.
+
+(a) create the patient table migration
+php artisan make:migration create_patients_table
+codenya:
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class CreatePatientsTable extends Migration
+{
+    public function up()
+    {
+        Schema::create('patients', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->date('date_of_birth');
+            $table->text('address');
+            $table->string('phone_number');
+            $table->text('diagnosis');
+            $table->timestamps();
+        });
+    }
+
+    public function down()
+    {
+        Schema::dropIfExists('patients');
+    }
+}
+
+(b) run migration patien table
+php artisan migrate
+codenya :
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Patient extends Model
+{
+    protected $fillable = [
+        'name',
+        'date_of_birth',
+        'address',
+        'phone_number',
+        'diagnosis',
+    ];
+}
+
+(c) create patient controller
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\Patient;
+
+class PatientController extends Controller
+{
+    public function index()
+    {
+        $patients = Patient::paginate(10);
+        return view('patients.index', compact('patients'));
+    }
+
+    public function create()
+    {
+        return view('patients.create');
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string',
+            'date_of_birth' => 'required|date',
+            'address' => 'required|string',
+            'phone_number' => 'required|string',
+            'diagnosis' => 'required|string',
+        ]);
+
+        $patient = new Patient();
+        $patient->name = $request->input('name');
+        $patient->date_of_birth = $request->input('date_of_birth');
+        $patient->address = $request->input('address');
+        $patient->phone_number = $request->input('phone_number');
+        $patient->diagnosis = $request->input('diagnosis');
+        $patient->save();
+
+        return redirect()->route('patients.index')->with('success', 'Patient data has been added successfully!');
+    }
+
+    public function edit($id)
+    {
+        $patient = Patient::find($id);
+        return view('patients.edit', compact('patient'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'name' => 'required|string',
+            'date_of_birth' => 'required|date',
+            'address' => 'required|string',
+            'phone_number' => 'required|string',
+            'diagnosis' => 'required|string',
+        ]);
+
+        $patient = Patient::find($id);
+        $patient->name = $request->input('name');
+        $patient->date_of_birth = $request->input('date_of_birth');
+        $patient->address = $request->input('address');
+        $patient->phone_number = $request->input('phone_number');
+        $patient->diagnosis = $request->input('diagnosis');
+        $patient->save();
+
+        return redirect()->route('patients.index')->with('success', 'Patient data has been updated successfully!');
+    }
+
+2. Bangun CRUD untuk simpan pasien rumah sakit dengan Laravel 11 lengkap dengan pagination dan konfirmasi jika data input form tambah pasien ada yang kosong dengan mengggunakan validate.
+(a) Controller: PatientController.php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\Patient;
+
+class PatientController extends Controller
+{
+    public function index()
+    {
+        $patients = Patient::paginate(10);
+        return view('patients.index', compact('patients'));
+    }
+
+    public function create()
+    {
+        return view('patients.create');
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string',
+            'date_of_birth' => 'required|date',
+            'address' => 'required|string',
+            'phone_number' => 'required|string',
+            'diagnosis' => 'required|string',
+        ]);
+
+        $patient = new Patient();
+        $patient->name = $request->input('name');
+        $patient->date_of_birth = $request->input('date_of_birth');
+        $patient->address = $request->input('address');
+        $patient->phone_number = $request->input('phone_number');
+        $patient->diagnosis = $request->input('diagnosis');
+        $patient->save();
+
+        return redirect()->route('patients.index')->with('success', 'Patient data has been added successfully!');
+    }
+
+    public function edit($id)
+    {
+        $patient = Patient::find($id);
+        return view('patients.edit', compact('patient'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'name' => 'required|string',
+            'date_of_birth' => 'required|date',
+            'address' => 'required|string',
+            'phone_number' => 'required|string',
+            'diagnosis' => 'required|string',
+        ]);
+
+        $patient = Patient::find($id);
+        $patient->name = $request->input('name');
+        $patient->date_of_birth = $request->input('date_of_birth');
+        $patient->address = $request->input('address');
+        $patient->phone_number = $request->input('phone_number');
+        $patient->diagnosis = $request->input('diagnosis');
+        $patient->save();
+
+        return redirect()->route('patients.index')->with('success', 'Patient data has been updated successfully!');
+    }
+
+    public function destroy($id)
+    {
+        $patient = Patient::find($id);
+        $patient->delete();
+
+        return redirect()->route('patients.index')->with('success', 'Patient data has been deleted successfully!');
+    }
+}
+
+(b) Model: Patient.php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Patient extends Model
+{
+    protected $fillable = [
+        'name',
+        'date_of_birth',
+        'address',
+        'phone_number',
+        'diagnosis',
+    ];
+}
+
+(c) View: create.blade.phpview crate blade php
+
+@extends('layouts.app')
+
+@section('content')
+    <h1>Create Patient</h1>
+
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <form method="POST" action="{{ route('patients.store') }}">
+        @csrf
+
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" class="form-control" id="name" name="name" value="{{ old('name') }}">
+        </div>
+
+        <div class="form-group">
+            <label for="date_of_birth">Date of Birth</label>
+            <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" value="{{ old('date_of_birth') }}">
+        </div>
+
+        <div class="form-group">
+            <label for="address">Address</label>
+            <textarea class="form-control" id="address" name="address">{{ old('address') }}</textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="phone_number">Phone Number</label>
+            <input type="text" class="form-control" id="phone_number" name="phone_number" value="{{ old('phone_number') }}">
+        </div>
+
+        <div class="form-group">
+            <label for="diagnosis">Diagnosis</label>
+            <textarea class="form-control" id="diagnosis" name="diagnosis">{{ old('diagnosis') }}</textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Create Patient</button>
+    </form>
+@endsection
+
+(d) view: edit.blade.php
+
+@extends('layouts.app')
+
+@section('content')
+   
